@@ -20,13 +20,20 @@ export async function createSupabaseServer() {
 
 // Cliente para client components
 export function createSupabaseClient() {
+  let userId = ''
+  
+  // Verificar se estamos no browser
+  if (typeof window !== 'undefined') {
+    userId = localStorage.getItem('clerk-user-id') || ''
+  }
+
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       global: {
         headers: {
-          'x-user-id': localStorage.getItem('clerk-user-id') || ''
+          'x-user-id': userId
         }
       }
     }
