@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { Hero } from '@/components/landing/hero'
 import { Header } from '@/components/landing/header'
 
+// Configurar geração estática apenas para a página inicial
+export const dynamic = 'force-static'
+
 export default async function Home() {
   const { userId } = auth()
   

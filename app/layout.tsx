@@ -35,6 +35,13 @@ export default function RootLayout({
               footerActionLink: "text-primary hover:text-primary/90"
             }
           }}
+          navigate={(to) => {
+            // Usar window.location para navegação no cliente
+            if (typeof window !== 'undefined') {
+              window.location.href = to
+            }
+            return Promise.resolve()
+          }}
         >
           {children}
           <Toaster />

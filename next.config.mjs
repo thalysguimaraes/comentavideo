@@ -6,9 +6,12 @@ const nextConfig = {
   experimental: {
     serverActions: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@clerk/nextjs']
-  }
+  output: 'standalone',
+  images: {
+    domains: ['localhost', 'your-supabase-project.supabase.co'],
+  },
+  // Desabilitar geração estática para páginas que precisam de autenticação
+  staticPageGenerationTimeout: 0,
 };
 
 export default nextConfig;
