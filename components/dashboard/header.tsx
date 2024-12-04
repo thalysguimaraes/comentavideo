@@ -53,7 +53,7 @@ export function Header() {
     return () => {
       channel.unsubscribe()
     }
-  }, [])
+  }, [supabase])
 
   return (
     <>

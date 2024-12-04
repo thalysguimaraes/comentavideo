@@ -1,19 +1,13 @@
 'use client'
 
-import { useCallback, useState, useRef } from 'react'
+import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload } from 'lucide-react'
 import { createSupabaseClient } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { VideoFormDialog } from '@/components/video-form-dialog'
 import { useUser } from '@clerk/nextjs'
 import { useToast } from '@/hooks/use-toast'
-
-interface UploadProgressEvent {
-  loaded: number
-  total: number
-}
 
 export function UploadDropzone() {
   const [uploading, setUploading] = useState(false)

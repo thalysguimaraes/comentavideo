@@ -46,7 +46,7 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [videoId])
+  }, [videoId, loadComments, supabase])
 
   useEffect(() => {
     const handleTimeUpdate = (e: CustomEvent<{ currentTime: number }>) => {

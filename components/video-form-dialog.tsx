@@ -45,7 +45,7 @@ export function VideoFormDialog({ videoId, videoUrl, onClose }: VideoFormDialogP
     }
 
     loadVideoData()
-  }, [videoId])
+  }, [videoId, supabase])
 
   // Log quando os inputs mudam
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

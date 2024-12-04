@@ -15,7 +15,7 @@ export default async function VideoPage({ params }: { params: { id: string } }) 
   const { userId } = auth()
   const supabase = await createSupabaseServer()
   
-  const { data: video, error } = await supabase
+  const { data: video } = await supabase
     .from('videos')
     .select('*')
     .eq('id', params.id)

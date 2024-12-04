@@ -1,5 +1,3 @@
-import { Header } from '@/components/dashboard/header'
-import { Sidebar } from '@/components/dashboard/sidebar'
 import { VideoGrid } from '@/components/dashboard/video-grid'
 import { createSupabaseServer } from '@/lib/supabase'
 import { auth } from '@clerk/nextjs'

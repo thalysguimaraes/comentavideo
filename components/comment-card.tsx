@@ -15,7 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { supabase } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase'
+import Image from 'next/image'
 
 interface CommentCardProps {
   comment: {
@@ -43,7 +44,8 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
     const thumbnailIndex = Math.floor(timestamp / 5)
     const thumbnailPath = `thumbnails/${fileName}_${thumbnailIndex}.jpg`
     
-    return supabase.storage
+    return createSupabaseClient()
+      .storage
       .from('videos')
       .getPublicUrl(thumbnailPath)
       .data.publicUrl
@@ -94,12 +96,13 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
             onClick={handleTimeClick}
           >
             <div className="absolute inset-0">
-              <img
+              <Image
                 src={thumbnailUrl}
                 alt={`Momento ${formatTime(comment.timestamp)}`}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 onError={(e) => {
-                  // Em caso de erro, remover a imagem
+                  // In case of error, hide the image
                   e.currentTarget.style.display = 'none'
                 }}
               />
