@@ -6,7 +6,7 @@ export const clerkConfig = {
 }
 
 export const middleware = authMiddleware({
-  publicRoutes: ["/sign-in", "/sign-up"],
+  publicRoutes: ["/", "/sign-in(.*)", "/sign-up(.*)"],
   afterAuth(auth, req) {
     // Redirecionar para onboarding se não tiver nome
     if (auth.userId && !auth.user?.firstName && req.url !== "/onboarding") {
