@@ -4,7 +4,7 @@ import { formatTime } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Play, Trash2 } from 'lucide-react'
 import { usePlayer } from '@/contexts/player-context'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,25 +33,28 @@ interface CommentCardProps {
 export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
   const { seekTo } = usePlayer()
   const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
   const currentUser = localStorage.getItem('author_name')
   const isOwnComment = currentUser === comment.author_name
 
-  const getThumbnailUrl = (videoUrl: string, timestamp: number) => {
-    const fileName = videoUrl.split('/').pop()
-    if (!fileName) return null
+  useEffect(() => {
+    const getThumbnailUrl = () => {
+      const fileName = videoUrl.split('/').pop()
+      if (!fileName) return null
 
-    // Escolher a thumbnail mais próxima do timestamp
-    const thumbnailIndex = Math.floor(timestamp / 5)
-    const thumbnailPath = `thumbnails/${fileName}_${thumbnailIndex}.jpg`
-    
-    return createSupabaseClient()
-      .storage
-      .from('videos')
-      .getPublicUrl(thumbnailPath)
-      .data.publicUrl
-  }
+      const thumbnailIndex = Math.floor(comment.timestamp / 5)
+      const thumbnailPath = `thumbnails/${fileName}_${thumbnailIndex}.jpg`
+      
+      const { data } = createSupabaseClient()
+        .storage
+        .from('videos')
+        .getPublicUrl(thumbnailPath)
 
-  const thumbnailUrl = getThumbnailUrl(videoUrl, comment.timestamp)
+      return data.publicUrl
+    }
+
+    setThumbnailUrl(getThumbnailUrl())
+  }, [videoUrl, comment.timestamp])
 
   const handleTimeClick = () => {
     seekTo(comment.timestamp)
@@ -96,16 +99,22 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
             onClick={handleTimeClick}
           >
             <div className="absolute inset-0">
-              <Image
-                src={thumbnailUrl}
-                alt={`Momento ${formatTime(comment.timestamp)}`}
-                fill
-                className="object-cover"
-                onError={(e) => {
-                  // In case of error, hide the image
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
+              {thumbnailUrl ? (
+                <Image
+                  src={thumbnailUrl}
+                  alt={`Momento ${formatTime(comment.timestamp)}`}
+                  fill
+                  className="object-cover"
+                  onError={(e) => {
+                    // In case of error, hide the image
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <Play className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
             </div>
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
             <Play className="absolute w-6 h-6 text-white opacity-75 group-hover:opacity-100 transition-opacity" />
