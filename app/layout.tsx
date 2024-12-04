@@ -26,7 +26,16 @@ export default function RootLayout({
         "min-h-screen bg-background font-sans antialiased",
         fontSans.variable
       )}>
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={{
+            elements: {
+              rootBox: "mx-auto",
+              card: "bg-card shadow-none",
+              formButtonPrimary: "bg-primary hover:bg-primary/90",
+              footerActionLink: "text-primary hover:text-primary/90"
+            }
+          }}
+        >
           {children}
           <Toaster />
         </ClerkProvider>
