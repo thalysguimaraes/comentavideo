@@ -1,4 +1,6 @@
 import { authMiddleware } from "@clerk/nextjs"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export default authMiddleware({
   publicRoutes: ["/", "/sign-in", "/sign-up"],
@@ -6,8 +8,8 @@ export default authMiddleware({
   afterAuth(auth, req) {
     // Redirecionar para onboarding se não tiver nome
     if (auth.userId && !auth.user?.firstName && !req.url.includes('/onboarding')) {
-      const onboardingUrl = new URL('/onboarding', req.url)
-      return Response.redirect(onboardingUrl)
+      const url = new URL('/onboarding', req.url)
+      return NextResponse.redirect(url)
     }
   }
 })
