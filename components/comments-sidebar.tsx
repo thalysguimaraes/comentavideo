@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { AuthorDialog } from '@/components/author-dialog'
 import { CommentCard } from '@/components/comment-card'
+import { usePlayer } from '@/contexts/player-context'
 
 interface Comment {
   id: string
@@ -23,10 +24,10 @@ interface CommentsSidebarProps {
 
 export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
   const supabase = createSupabaseClient()
-  const [comments, setComments] = useState<Comment[]>([])
+  const [comments, setComments] = useState<any[]>([])
   const [newComment, setNewComment] = useState('')
-  const [currentTime, setCurrentTime] = useState(0)
   const { toast } = useToast()
+  const { currentTime, seekTo } = usePlayer()
 
   useEffect(() => {
     loadComments()
@@ -118,10 +119,8 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
-  const handleSeek = (time: number) => {
-    if (window.seekToTime) {
-      window.seekToTime(time)
-    }
+  const handleTimeClick = (time: number) => {
+    seekTo(time)
   }
 
   const handleDeleteComment = async (commentId: string) => {
@@ -178,7 +177,6 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
               key={comment.id} 
               comment={comment}
               videoUrl={videoUrl}
-              onSeek={handleSeek}
               onDelete={handleDeleteComment}
             />
           ))}
