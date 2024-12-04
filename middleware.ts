@@ -1,20 +1,20 @@
 import { authMiddleware } from "@clerk/nextjs"
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
 export default authMiddleware({
   publicRoutes: ["/", "/sign-in", "/sign-up"],
   ignoredRoutes: ["/api/webhook"],
-  afterAuth(auth, req) {
-    // Redirecionar para onboarding se não tiver nome
+  beforeAuth: (req) => {
+    // Seu código aqui
+  },
+  afterAuth: (auth, req) => {
     if (auth.userId && !auth.user?.firstName && !req.url.includes('/onboarding')) {
-      const url = new URL('/onboarding', req.url)
-      return NextResponse.redirect(url)
+      const url = req.url.replace(req.nextUrl.pathname, '/onboarding')
+      return Response.redirect(url)
     }
   }
 })
 
+// Configuração do matcher sem runtime específico
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-  runtime: 'nodejs'
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)']
 } 

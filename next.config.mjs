@@ -7,8 +7,8 @@ const nextConfig = {
     serverActions: true,
   },
   experimental: {
-    runtime: 'nodejs',
-  },
+    serverComponentsExternalPackages: ['@clerk/nextjs']
+  }
 };
 
 export default nextConfig;
