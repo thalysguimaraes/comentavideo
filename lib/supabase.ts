@@ -20,16 +20,15 @@ export async function createSupabaseServer() {
 
 // Cliente para client components
 export function createSupabaseClient() {
-  const supabase = createClient(
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      global: {
+        headers: {
+          'x-user-id': localStorage.getItem('clerk-user-id') || ''
+        }
+      }
+    }
   )
-
-  // Interceptar todas as requisições para adicionar o header
-  supabase.rest.headers = {
-    ...supabase.rest.headers,
-    'x-user-id': localStorage.getItem('clerk-user-id') || ''
-  }
-
-  return supabase
 } 
