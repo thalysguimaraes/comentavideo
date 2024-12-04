@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { AuthorDialog } from '@/components/author-dialog'
 import { CommentCard } from '@/components/comment-card'
 import { usePlayer } from '@/contexts/player-context'
+import { formatTime } from '@/lib/utils'
 
 interface Comment {
   id: string
@@ -26,8 +27,9 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
   const supabase = createSupabaseClient()
   const [comments, setComments] = useState<any[]>([])
   const [newComment, setNewComment] = useState('')
+  const [currentTime, setCurrentTime] = useState(0)
   const { toast } = useToast()
-  const { currentTime, seekTo } = usePlayer()
+  const { seekTo } = usePlayer()
 
   useEffect(() => {
     loadComments()
@@ -47,7 +49,7 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [videoId, loadComments, supabase])
+  }, [videoId])
 
   useEffect(() => {
     const handleTimeUpdate = (e: CustomEvent<{ currentTime: number }>) => {
@@ -111,12 +113,6 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
         description: 'Não foi possível adicionar seu comentário.'
       })
     }
-  }
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = Math.floor(seconds % 60)
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
   const handleTimeClick = (time: number) => {
