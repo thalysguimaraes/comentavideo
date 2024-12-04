@@ -20,7 +20,6 @@ export function VideoAuthor({ userId }: VideoAuthorProps) {
             avatarBox: "h-8 w-8"
           }
         }}
-        userId={userId}
       />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-muted-foreground">
