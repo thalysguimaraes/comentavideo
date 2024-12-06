@@ -9,6 +9,7 @@ import { AuthorDialog } from '@/components/author-dialog'
 import { CommentCard } from '@/components/comment-card'
 import { usePlayer } from '@/contexts/player-context'
 import { formatTime } from '@/lib/utils'
+import { MessageSquare } from 'lucide-react'
 
 interface Comment {
   id: string
@@ -84,7 +85,7 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
     if (!authorName) {
       toast({
         variant: 'destructive',
-        title: 'Identificação necess��ria',
+        title: 'Identificação necessária',
         description: 'Por favor, informe seu nome para comentar.'
       })
       return
@@ -93,6 +94,22 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
     if (!newComment.trim()) return
 
     try {
+      // First verify if video still exists
+      const { data: video, error: videoError } = await supabase
+        .from('videos')
+        .select('id')
+        .eq('id', videoId)
+        .single()
+
+      if (videoError || !video) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao comentar',
+          description: 'O vídeo não está mais disponível.'
+        })
+        return
+      }
+
       const { error, data } = await supabase.from('comments')
         .insert({
           video_id: videoId,
@@ -119,10 +136,6 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
         description: 'Não foi possível adicionar seu comentário.'
       })
     }
-  }
-
-  const handleTimeClick = (time: number) => {
-    seekTo(time)
   }
 
   const handleDeleteComment = async (commentId: string) => {
@@ -153,9 +166,6 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
 
       if (deleteError) throw deleteError
 
-      // Update local state
-      setComments(current => current.filter(c => c.id !== commentId))
-
       toast({
         title: 'Comentário excluído',
         description: 'Seu comentário foi removido com sucesso.'
@@ -180,14 +190,26 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6">
-          {comments.map(comment => (
-            <CommentCard 
-              key={comment.id} 
-              comment={comment}
-              videoUrl={videoUrl}
-              onDelete={handleDeleteComment}
-            />
-          ))}
+          {comments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center py-12">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <MessageSquare className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="font-medium mb-1">Nenhum comentário ainda</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Seja o primeiro a comentar neste vídeo
+              </p>
+            </div>
+          ) : (
+            comments.map(comment => (
+              <CommentCard 
+                key={comment.id} 
+                comment={comment}
+                videoUrl={videoUrl}
+                onDelete={handleDeleteComment}
+              />
+            ))
+          )}
         </div>
       </div>
       <div className="p-6 border-t bg-background">
@@ -200,7 +222,7 @@ export function CommentsSidebar({ videoId, videoUrl }: CommentsSidebarProps) {
         />
         <Button 
           onClick={handleAddComment}
-          className="w-full mt-2"
+          className="w-full rounded-xl mt-2"
         >
           comentar em {formatTime(currentTime)}
         </Button>

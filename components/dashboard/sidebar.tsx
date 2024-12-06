@@ -38,9 +38,13 @@ export function Sidebar({ userId }: SidebarProps) {
         <div className="flex items-center gap-3 py-3">
           <UserButton afterSignOutUrl="/" />
           {user && (
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">{user.fullName || user.username}</span>
-              <span className="text-xs text-muted-foreground">{user.primaryEmailAddress?.emailAddress}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-medium truncate">
+                {user.fullName || user.username}
+              </span>
+              <span className="text-xs text-muted-foreground truncate">
+                {user.primaryEmailAddress?.emailAddress}
+              </span>
             </div>
           )}
         </div>

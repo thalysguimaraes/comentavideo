@@ -18,12 +18,15 @@ export function VideoWrapper({ url }: VideoWrapperProps) {
       width="100%"
       height="100%"
       controls
+      crossOrigin="anonymous"
       config={{
         file: {
           attributes: {
+            crossOrigin: 'anonymous',
             controlsList: 'nodownload',
             disablePictureInPicture: true
-          }
+          },
+          forceVideo: true
         }
       }}
       progressInterval={100}

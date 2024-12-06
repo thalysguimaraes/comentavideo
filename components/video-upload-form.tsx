@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Upload, X } from 'lucide-react'
 import { uploadVideo } from '@/app/actions'
 import { generateQuickThumbnail } from '@/lib/client-utils'
+import { Label } from '@/components/ui/label'
 
 interface VideoUploadFormProps {
   onSuccess?: () => void
@@ -56,8 +57,8 @@ export function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
       await uploadVideo(formData)
 
       toast({
-        title: 'Sucesso!',
-        description: 'Vídeo enviado com sucesso.'
+        title: 'sucesso!',
+        description: 'vídeo enviado com sucesso.'
       })
 
       // Reset form
@@ -68,7 +69,7 @@ export function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao enviar',
+        title: 'erro ao enviar',
         description: error.message
       })
     } finally {
@@ -77,7 +78,7 @@ export function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {!selectedFile ? (
         <div
           {...getRootProps()}
@@ -86,7 +87,7 @@ export function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
           <input {...getInputProps()} />
           <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            Arraste um vídeo ou clique para selecionar
+            arraste um vídeo ou clique para selecionar
           </p>
         </div>
       ) : (
@@ -110,21 +111,35 @@ export function VideoUploadForm({ onSuccess }: VideoUploadFormProps) {
         </div>
       )}
 
-      <Input
-        placeholder="Título do vídeo"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="title">título do vídeo</Label>
+          <Input
+            id="title"
+            placeholder="preencha o título"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </div>
 
-      <Textarea
-        placeholder="Descrição (opcional)"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+        <div className="space-y-2">
+          <Label htmlFor="description">descrição</Label>
+          <Textarea
+            id="description"
+            placeholder="é opcional, mas ajuda"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+      </div>
 
-      <Button type="submit" disabled={!selectedFile || !title || uploading}>
-        {uploading ? 'Enviando...' : 'Enviar vídeo'}
+      <Button 
+        type="submit" 
+        disabled={!selectedFile || !title || uploading}
+        className="w-full"
+      >
+        {uploading ? 'enviando...' : 'enviar vídeo'}
       </Button>
     </form>
   )

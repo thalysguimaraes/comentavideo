@@ -85,7 +85,7 @@ export function VideoAuthor({ userId }: VideoAuthorProps) {
         enviado por
         <span className="font-medium text-foreground">{displayName}</span>
         usando o
-        <span className="font-medium text-foreground">comenta.video</span>
+        <a href="https://comenta.video" className="font-medium text-foreground hover:text-purple-600 transition-colors">comenta.video</a>
       </div>
     </div>
   )

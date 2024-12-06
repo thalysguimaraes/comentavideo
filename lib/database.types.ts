@@ -6,10 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Video = Database['public']['Tables']['videos']['Row']
-export type Comment = Database['public']['Tables']['comments']['Row']
-export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
-
 export interface Database {
   public: {
     Tables: {
@@ -46,6 +42,32 @@ export interface Database {
           user_id?: string
           status?: 'draft' | 'published'
           processing_status?: 'pending' | 'processing' | 'completed' | 'failed'
+        }
+      }
+      video_thumbnails: {
+        Row: {
+          id: string
+          video_id: string
+          timestamp: number
+          url: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          video_id: string
+          timestamp: number
+          url: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          video_id?: string
+          timestamp?: number
+          url?: string
+          created_at?: string
+          updated_at?: string
         }
       }
       comments: {
@@ -102,20 +124,21 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      set_claim: {
+      get_nearest_thumbnail: {
         Args: {
-          claim: string
-          value: string
+          video_id: string
+          target_timestamp: number
         }
-        Returns: void
-      }
-      update_user_profile_updated_at: {
-        Args: Record<PropertyKey, never>
-        Returns: unknown
+        Returns: string | null
       }
     }
     Enums: {
       [_ in never]: never
     }
   }
-} 
+}
+
+export type Video = Database['public']['Tables']['videos']['Row']
+export type Comment = Database['public']['Tables']['comments']['Row']
+export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
+export type VideoThumbnail = Database['public']['Tables']['video_thumbnails']['Row'] 

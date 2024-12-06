@@ -2,6 +2,7 @@ import { VideoGrid } from '@/components/dashboard/video-grid'
 import { auth } from "@clerk/nextjs"
 import { createSupabaseServerClient } from '@/app/supabase/server'
 import { Database } from '@/lib/database.types'
+import { DashboardClient } from '@/components/dashboard/dashboard-client'
 
 type Video = Database['public']['Tables']['videos']['Row'] & {
   views_count: number
@@ -26,9 +27,5 @@ export default async function DashboardPage() {
     comments_count: 0
   }))
 
-  return (
-    <main className="container py-8">
-      <VideoGrid videos={formattedVideos} />
-    </main>
-  )
+  return <DashboardClient initialVideos={formattedVideos} />
 } 

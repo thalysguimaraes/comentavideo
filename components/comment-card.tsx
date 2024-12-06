@@ -18,6 +18,54 @@ import {
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Image from 'next/image'
 
+// Function to generate a consistent color based on a string
+function stringToColor(str: string) {
+  let hash = 0;
+  const string = str.toLowerCase(); // normalize the string
+  
+  // Use a better hash function for more distinct values
+  for (let i = 0; i < string.length; i++) {
+    const char = string.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  // Use prime numbers to get better distribution
+  const h = Math.abs(hash % 271) / 271; // Use prime number for better distribution
+  
+  // Generate HSL with golden ratio for better color distribution
+  const hue = Math.floor(h * 360);
+  const saturation = 75; // Fixed saturation
+  const lightness = 60; // Fixed lightness for readability
+  
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`
+}
+
+interface UserInitialAvatarProps {
+  name: string
+  size?: 'sm' | 'md' | 'lg'
+}
+
+function UserInitialAvatar({ name, size = 'sm' }: UserInitialAvatarProps) {
+  const initial = name.charAt(0).toUpperCase()
+  const color = stringToColor(name)
+  
+  const sizeClasses = {
+    sm: 'w-6 h-6 text-xs',
+    md: 'w-8 h-8 text-sm',
+    lg: 'w-10 h-10 text-base'
+  }
+
+  return (
+    <div 
+      className={`${sizeClasses[size]} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0`}
+      style={{ backgroundColor: color }}
+    >
+      {initial}
+    </div>
+  )
+}
+
 interface CommentCardProps {
   comment: {
     id: string
@@ -35,35 +83,32 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
   const { seekTo } = usePlayer()
   const [showDeleteAlert, setShowDeleteAlert] = useState(false)
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+  const [thumbnailError, setThumbnailError] = useState(false)
   const currentUser = localStorage.getItem('author_name')
   const isOwnComment = currentUser === comment.author_name
   const supabase = createClientComponentClient()
 
   useEffect(() => {
-    const getThumbnailUrl = async () => {
+    async function loadThumbnail() {
       try {
-        const { data, error } = await supabase
-          .rpc('get_nearest_thumbnail', {
-            video_id: comment.video_id,
-            target_timestamp: Math.floor(comment.timestamp)
-          })
+        const { data: video } = await supabase
+          .from('videos')
+          .select('thumbnail_url')
+          .eq('id', comment.video_id)
+          .single()
 
-        if (error) {
-          console.error('Error getting thumbnail:', error)
-          return null
+        if (video?.thumbnail_url) {
+          setThumbnailUrl(video.thumbnail_url)
+          setThumbnailError(false)
         }
-
-        return data
       } catch (error) {
-        console.error('Error in getThumbnailUrl:', error)
-        return null
+        console.error('Error loading thumbnail:', error)
+        setThumbnailError(true)
       }
     }
 
-    getThumbnailUrl().then(url => {
-      if (url) setThumbnailUrl(url)
-    })
-  }, [comment.video_id, comment.timestamp, supabase])
+    loadThumbnail()
+  }, [comment.video_id, supabase])
 
   const handleTimeClick = () => {
     seekTo(comment.timestamp)
@@ -78,7 +123,10 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
     <>
       <div className="p-3 bg-card rounded-lg border">
         <div className="flex justify-between items-start mb-2">
-          <span className="font-medium">{comment.author_name}</span>
+          <div className="flex items-center gap-2">
+            <UserInitialAvatar name={comment.author_name} />
+            <span className="font-medium text-sm">{comment.author_name}</span>
+          </div>
           <div className="flex items-center gap-2">
             <Button 
               variant="ghost" 
@@ -108,7 +156,7 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
             onClick={handleTimeClick}
           >
             <div className="absolute inset-0">
-              {thumbnailUrl ? (
+              {thumbnailUrl && !thumbnailError ? (
                 <Image
                   src={thumbnailUrl}
                   alt={`Momento ${formatTime(comment.timestamp)}`}
@@ -116,9 +164,10 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
                   className="object-cover"
                   sizes="96px"
                   unoptimized
-                  onError={(e) => {
+                  crossOrigin="anonymous"
+                  onError={() => {
                     console.error('Error loading thumbnail:', thumbnailUrl)
-                    e.currentTarget.style.display = 'none'
+                    setThumbnailError(true)
                   }}
                 />
               ) : (
