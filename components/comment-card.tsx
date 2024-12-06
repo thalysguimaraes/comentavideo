@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { createSupabaseClient } from '@/lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Image from 'next/image'
 
 interface CommentCardProps {
@@ -25,6 +25,7 @@ interface CommentCardProps {
     timestamp: number
     created_at: string
     author_name: string
+    video_id: string
   }
   videoUrl: string
   onDelete: (commentId: string) => Promise<void>
@@ -36,25 +37,33 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
   const currentUser = localStorage.getItem('author_name')
   const isOwnComment = currentUser === comment.author_name
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
-    const getThumbnailUrl = () => {
-      const fileName = videoUrl.split('/').pop()
-      if (!fileName) return null
+    const getThumbnailUrl = async () => {
+      try {
+        const { data, error } = await supabase
+          .rpc('get_nearest_thumbnail', {
+            video_id: comment.video_id,
+            target_timestamp: Math.floor(comment.timestamp)
+          })
 
-      const thumbnailIndex = Math.floor(comment.timestamp / 5)
-      const thumbnailPath = `thumbnails/${fileName}_${thumbnailIndex}.jpg`
-      
-      const { data } = createSupabaseClient()
-        .storage
-        .from('videos')
-        .getPublicUrl(thumbnailPath)
+        if (error) {
+          console.error('Error getting thumbnail:', error)
+          return null
+        }
 
-      return data.publicUrl
+        return data
+      } catch (error) {
+        console.error('Error in getThumbnailUrl:', error)
+        return null
+      }
     }
 
-    setThumbnailUrl(getThumbnailUrl())
-  }, [videoUrl, comment.timestamp])
+    getThumbnailUrl().then(url => {
+      if (url) setThumbnailUrl(url)
+    })
+  }, [comment.video_id, comment.timestamp, supabase])
 
   const handleTimeClick = () => {
     seekTo(comment.timestamp)
@@ -105,8 +114,10 @@ export function CommentCard({ comment, videoUrl, onDelete }: CommentCardProps) {
                   alt={`Momento ${formatTime(comment.timestamp)}`}
                   fill
                   className="object-cover"
+                  sizes="96px"
+                  unoptimized
                   onError={(e) => {
-                    // In case of error, hide the image
+                    console.error('Error loading thumbnail:', thumbnailUrl)
                     e.currentTarget.style.display = 'none'
                   }}
                 />

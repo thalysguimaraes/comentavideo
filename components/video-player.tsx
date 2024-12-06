@@ -1,3 +1,5 @@
+'use client'
+
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
@@ -7,14 +9,11 @@ const VideoWrapper = dynamic(
 )
 
 interface VideoPlayerProps {
-  url: string
-  title: string
-  description: string
+  videoId: string
+  videoUrl: string
 }
 
-export function VideoPlayer({ url, title, description }: VideoPlayerProps) {
-  console.log('VideoPlayer props:', { url, title, description })
-  
+export function VideoPlayer({ videoId, videoUrl }: VideoPlayerProps) {
   return (
     <div className="overflow-hidden rounded-lg bg-black shadow-lg">
       <div className="aspect-video relative">
@@ -25,13 +24,8 @@ export function VideoPlayer({ url, title, description }: VideoPlayerProps) {
             </div>
           </div>
         }>
-          <VideoWrapper url={url} />
+          <VideoWrapper url={videoUrl} />
         </Suspense>
-      </div>
-      
-      {/* Description section */}
-      <div className="p-6 bg-card">
-        <p className="text-muted-foreground whitespace-pre-wrap">{description}</p>
       </div>
     </div>
   )

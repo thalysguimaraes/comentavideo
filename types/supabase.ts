@@ -1,3 +1,11 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
 export interface Database {
   public: {
     Tables: {
@@ -5,16 +13,66 @@ export interface Database {
         Row: {
           id: string
           created_at: string
-          title: string | null
+          title: string
           description: string | null
           url: string
-          status: 'draft' | 'published'
           user_id: string
+          status: 'draft' | 'published'
         }
-        Insert: Omit<Video, 'id' | 'created_at'>
-        Update: Partial<Omit<Video, 'id' | 'created_at'>>
+        Insert: {
+          id?: string
+          created_at?: string
+          title: string
+          description?: string | null
+          url: string
+          user_id: string
+          status?: 'draft' | 'published'
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          title?: string
+          description?: string | null
+          url?: string
+          user_id?: string
+          status?: 'draft' | 'published'
+        }
       }
-      // ... outras tabelas
+      comments: {
+        Row: {
+          id: string
+          created_at: string
+          content: string
+          video_id: string
+          timestamp: number
+          author_name: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          content: string
+          video_id: string
+          timestamp: number
+          author_name: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          content?: string
+          video_id?: string
+          timestamp?: number
+          author_name?: string
+        }
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
     }
   }
 }

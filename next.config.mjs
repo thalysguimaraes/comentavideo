@@ -8,10 +8,15 @@ const nextConfig = {
   },
   output: 'standalone',
   images: {
-    domains: ['localhost', 'your-supabase-project.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'bcegudkpoimfabjrviqi.supabase.co',
+        pathname: '/storage/v1/object/public/videos/**',
+      }
+    ],
+    unoptimized: true
   },
-  // Desabilitar geração estática para páginas que precisam de autenticação
-  staticPageGenerationTimeout: 0,
-};
+}
 
-export default nextConfig;
+export default nextConfig

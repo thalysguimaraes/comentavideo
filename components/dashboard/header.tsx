@@ -69,7 +69,7 @@ export function Header() {
 
             <Button onClick={() => setOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
-              Novo vídeo
+              novo vídeo
             </Button>
           </div>
         </div>

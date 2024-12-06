@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { createSupabaseClient } from '@/lib/supabase'
+import { createSupabaseClient } from '@/lib/supabase/client'
 import { Copy } from 'lucide-react'
 
 interface VideoFormDialogProps {

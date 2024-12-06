@@ -1,25 +1,30 @@
-import { Sidebar } from '@/components/dashboard/sidebar'
-import { Header } from '@/components/dashboard/header'
+import { auth } from "@clerk/nextjs"
+import { createSupabaseServerClient } from '@/app/supabase/server'
+import { DashboardLayoutClient } from './layout-client'
+import { redirect } from 'next/navigation'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <div className="flex h-screen">
-      {/* Sidebar com z-index alto */}
-      <div className="w-64 fixed inset-y-0 z-50">
-        <Sidebar />
-      </div>
+  const { userId } = auth()
+  if (!userId) {
+    redirect('/auth/login')
+  }
 
-      {/* Conteúdo principal com margem para a sidebar */}
-      <div className="flex-1 ml-64">
-        <Header />
-        <main>
-          {children}
-        </main>
-      </div>
-    </div>
+  const supabase = await createSupabaseServerClient()
+  const { count } = await supabase
+    .from('videos')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+
+  return (
+    <DashboardLayoutClient 
+      userId={userId} 
+      videoCount={count || 0}
+    >
+      {children}
+    </DashboardLayoutClient>
   )
 } 

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { SignInButton, SignUpButton } from '@clerk/nextjs'
 
 export function Header() {
   return (
@@ -9,16 +9,16 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="font-semibold">comenta.video</div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
-            <Link href="/sign-in">
+          <SignInButton mode="modal">
+            <Button variant="ghost">
               Entrar
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/sign-up">
+            </Button>
+          </SignInButton>
+          <SignUpButton mode="modal">
+            <Button>
               Criar conta
-            </Link>
-          </Button>
+            </Button>
+          </SignUpButton>
         </div>
       </div>
     </header>

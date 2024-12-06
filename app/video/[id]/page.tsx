@@ -1,84 +1,75 @@
-import { createSupabaseServer } from '@/lib/supabase'
+'use client'
+
 import { VideoPlayer } from '@/components/video-player'
 import { CommentsSidebar } from '@/components/comments-sidebar'
-import { AuthorDialog } from '@/components/author-dialog'
-import { notFound } from 'next/navigation'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { PlayerProvider } from '@/contexts/player-context'
-import { auth } from '@clerk/nextjs'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import { VideoAuthor } from '@/components/video-author'
+import { createSupabaseClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { PlayerProvider } from '@/contexts/player-context'
+import type { Video } from '@/lib/database.types'
+import Lottie from 'lottie-react'
+import videoAnimation from '@/public/lottie.json'
 
-export default async function VideoPage({ params }: { params: { id: string } }) {
-  const { userId } = auth()
-  const supabase = await createSupabaseServer()
-  
-  const { data: video } = await supabase
-    .from('videos')
-    .select('*')
-    .eq('id', params.id)
-    .single()
+export default function VideoPage({ params }: { params: { id: string } }) {
+  const [video, setVideo] = useState<Video | null>(null)
+  const router = useRouter()
+  const supabase = createSupabaseClient()
 
-  if (!video) {
-    notFound()
-  }
+  useEffect(() => {
+    async function loadVideo() {
+      const { data: video, error } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('id', params.id)
+        .single()
 
-  const timeAgo = formatDistanceToNow(new Date(video.created_at), {
-    addSuffix: true,
-    locale: ptBR
-  })
+      if (error || !video) {
+        console.error('Error loading video:', error)
+        router.push('/dashboard')
+        return
+      }
 
-  const isOwner = userId === video.user_id
+      setVideo(video)
+    }
+
+    loadVideo()
+  }, [params.id, router])
+
+  if (!video) return null
 
   return (
     <PlayerProvider>
-      <div className="flex flex-col h-screen">
-        {/* Topbar */}
-        <div className="h-14 border-b flex items-center px-8 py-8 bg-background">
-          <div className="flex-1 flex items-center gap-4">
-            {isOwner && (
-              <Link 
-                href="/"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            )}
-            <div>
-              <h1 className="font-medium truncate">{video.title || 'Sem título'}</h1>
-              <p className="text-sm text-muted-foreground">{timeAgo}</p>
-            </div>
-          </div>
-
-          {/* Autor do vídeo */}
-          <VideoAuthor userId={video.user_id} />
-        </div>
-
-        {/* Main content */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Video section */}
-          <div className="flex-1 bg-muted overflow-y-auto">
-            <div className="max-w-[1200px] mx-auto px-8 py-8">
-              <VideoPlayer 
-                url={video.url} 
-                title={video.title || 'Sem título'} 
-                description={video.description || 'Sem descrição'}
+      <div className="flex">
+        <div className="flex-1 flex flex-col">
+          <div className="container max-w-[1400px] mx-auto px-8 pt-6">
+            <div className="w-12 h-12 mb-8">
+              <Lottie
+                animationData={videoAnimation}
+                loop={true}
+                className="w-full h-full"
               />
             </div>
-          </div>
-
-          {/* Comments sidebar */}
-          <div className="w-[400px] border-l">
-            <CommentsSidebar 
-              videoId={video.id} 
-              videoUrl={video.url}
-            />
+            <div className="aspect-video">
+              <VideoPlayer videoId={video.id} videoUrl={video.url} />
+            </div>
+            <div className="py-8">
+              <div className="flex items-center justify-between mb-8">
+                <h1 className="text-2xl font-bold">{video.title}</h1>
+                <VideoAuthor userId={video.user_id} />
+              </div>
+              {video.description && (
+                <div className="bg-slate-100 p-4 rounded-xl">
+                  <p className="text-xs text-muted-foreground">descrição:</p>
+                  <p className="mt-1">{video.description}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        <AuthorDialog />
+        <div className="w-[400px] h-[100vh] border-l">
+          <CommentsSidebar videoId={video.id} videoUrl={video.url} />
+        </div>
       </div>
     </PlayerProvider>
   )

@@ -1,18 +1,14 @@
-import type { Metadata } from "next"
-import { Inter as FontSans } from "next/font/google"
-import "./globals.css"
+import { Inter } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
+import { ptBR } from '@clerk/localizations'
 import { Toaster } from '@/components/ui/toaster'
-import { cn } from "@/lib/utils"
-import { ClerkProvider } from "@clerk/nextjs"
+import './globals.css'
 
-const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-})
+const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: "VideoLink",
-  description: "Compartilhe vídeos com comentários em momentos específicos",
+export const metadata = {
+  title: 'VideoLink',
+  description: 'Compartilhe seus vídeos com o mundo',
 }
 
 export default function RootLayout({
@@ -21,32 +17,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body className={cn(
-        "min-h-screen bg-background font-sans antialiased",
-        fontSans.variable
-      )}>
-        <ClerkProvider
-          appearance={{
-            elements: {
-              rootBox: "mx-auto",
-              card: "bg-card shadow-none",
-              formButtonPrimary: "bg-primary hover:bg-primary/90",
-              footerActionLink: "text-primary hover:text-primary/90"
-            }
-          }}
-          navigate={(to) => {
-            // Usar window.location para navegação no cliente
-            if (typeof window !== 'undefined') {
-              window.location.href = to
-            }
-            return Promise.resolve()
-          }}
-        >
+    <ClerkProvider localization={ptBR}>
+      <html lang="pt-BR">
+        <body className={inter.className}>
           {children}
           <Toaster />
-        </ClerkProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

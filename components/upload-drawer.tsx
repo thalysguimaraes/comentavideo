@@ -7,9 +7,10 @@ import { X } from 'lucide-react'
 interface UploadDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-export function UploadDrawer({ open, onOpenChange }: UploadDrawerProps) {
+export function UploadDrawer({ open, onOpenChange, onSuccess }: UploadDrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
@@ -27,7 +28,12 @@ export function UploadDrawer({ open, onOpenChange }: UploadDrawerProps) {
             <X className="h-4 w-4" />
           </button>
         </div>
-        <VideoUploadForm onSuccess={() => onOpenChange(false)} />
+        <VideoUploadForm 
+          onSuccess={() => {
+            onSuccess?.()
+            onOpenChange(false)
+          }} 
+        />
       </SheetContent>
     </Sheet>
   )

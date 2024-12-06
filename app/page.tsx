@@ -1,24 +1,22 @@
-import { auth } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 import { Hero } from '@/components/landing/hero'
 import { Header } from '@/components/landing/header'
-
-// Configurar geração estática apenas para a página inicial
-export const dynamic = 'force-static'
+import { auth } from '@clerk/nextjs'
 
 export default async function Home() {
   const { userId } = auth()
   
+  // Only redirect to dashboard if user is authenticated
   if (userId) {
     redirect('/dashboard')
   }
 
+  // Show landing page for non-authenticated users
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <Hero />
 
-      {/* Footer */}
       <footer className="py-6">
         <div className="container flex items-center justify-between">
           <p className="text-sm text-muted-foreground">

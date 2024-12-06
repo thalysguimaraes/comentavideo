@@ -11,32 +11,6 @@ interface VideoWrapperProps {
 export function VideoWrapper({ url }: VideoWrapperProps) {
   const { playerRef } = usePlayer()
 
-  useEffect(() => {
-    const player = playerRef.current
-    if (!player) {
-      console.log('Player ref not initialized')
-      return
-    }
-
-    console.log('Player ref initialized')
-    const handleTimeUpdate = () => {
-      const video = player.getInternalPlayer()
-      if (video) {
-        const currentTime = player.getCurrentTime()
-        console.log('Current time:', currentTime)
-        window.dispatchEvent(new CustomEvent('videoTimeUpdate', {
-          detail: { currentTime }
-        }))
-      }
-    }
-
-    const interval = setInterval(handleTimeUpdate, 100)
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [playerRef])
-
   return (
     <ReactPlayer
       ref={playerRef}
@@ -53,8 +27,14 @@ export function VideoWrapper({ url }: VideoWrapperProps) {
         }
       }}
       progressInterval={100}
+      onProgress={({ playedSeconds }) => {
+        window.dispatchEvent(
+          new CustomEvent('videoTimeUpdate', {
+            detail: { currentTime: playedSeconds }
+          })
+        )
+      }}
       onError={(e) => console.error('Player error:', e)}
-      onReady={() => console.log('Player ready')}
     />
   )
 } 

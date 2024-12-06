@@ -1,128 +1,108 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload } from 'lucide-react'
-import { createSupabaseClient } from '@/lib/supabase'
-import { Progress } from '@/components/ui/progress'
-import { VideoFormDialog } from '@/components/video-form-dialog'
-import { useUser } from '@clerk/nextjs'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useToast } from '@/hooks/use-toast'
+import { useRouter } from 'next/navigation'
+import { Upload } from 'lucide-react'
 
 export function UploadDropzone() {
   const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [uploadedVideo, setUploadedVideo] = useState<{ id: string, url: string } | null>(null)
-  const { user } = useUser()
+  const [user, setUser] = useState<any>(null)
   const { toast } = useToast()
-  const supabase = createSupabaseClient()
+  const router = useRouter()
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user)
+    }
+    getUser()
+  }, [supabase])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (!user) return
     const file = acceptedFiles[0]
     if (!file) return
 
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao fazer upload",
-        description: "Você precisa estar logado para fazer upload de vídeos."
-      })
-      return
-    }
-
     setUploading(true)
-    setProgress(0)
 
     try {
-      // Upload do vídeo
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random()}.${fileExt}`
       const filePath = `${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('videos')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        })
+        .upload(filePath, file)
 
       if (uploadError) throw uploadError
 
-      // Obter URL pública do vídeo
       const { data: { publicUrl } } = supabase.storage
         .from('videos')
         .getPublicUrl(filePath)
 
-      // Salvar registro no banco
-      const { error: insertError, data: insertData } = await supabase
+      const { error: dbError } = await supabase
         .from('videos')
         .insert({
-          url: publicUrl,
           title: file.name.replace(/\.[^/.]+$/, ''),
-          status: 'draft',
+          url: publicUrl,
           user_id: user.id
         })
-        .select()
-        .single()
 
-      if (insertError) throw insertError
-
-      setUploadedVideo({
-        id: insertData.id,
-        url: publicUrl
-      })
+      if (dbError) throw dbError
 
       toast({
-        title: "Upload concluído",
-        description: "Seu vídeo foi enviado com sucesso."
+        title: 'Vídeo enviado!',
+        description: 'Seu vídeo foi enviado com sucesso.'
       })
 
-    } catch (error) {
-      console.error('Erro detalhado:', error)
+      router.refresh()
+    } catch (error: any) {
       toast({
-        variant: "destructive",
-        title: "Erro ao fazer upload",
-        description: "Não foi possível fazer o upload do vídeo."
+        variant: 'destructive',
+        title: 'Erro ao enviar',
+        description: error.message
       })
     } finally {
       setUploading(false)
-      setProgress(0)
     }
-  }, [user, toast, supabase])
+  }, [user, supabase, toast, router])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'video/*': ['.mp4', '.mov', '.avi']
+      'video/*': []
     },
-    maxFiles: 1
+    maxFiles: 1,
+    maxSize: 100 * 1024 * 1024, // 100MB
   })
 
   return (
-    <>
-      <div 
-        {...getRootProps()} 
-        className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-gray-400 transition-colors"
-      >
-        <input {...getInputProps()} />
-        <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-        {isDragActive ? (
-          <p>Solte o arquivo aqui...</p>
+    <div
+      {...getRootProps()}
+      className={`
+        border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
+        transition-colors
+        ${isDragActive ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'}
+      `}
+    >
+      <input {...getInputProps()} />
+      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+        <Upload className="h-12 w-12" />
+        {uploading ? (
+          <span>Enviando...</span>
+        ) : isDragActive ? (
+          <span>Solte o arquivo aqui</span>
         ) : (
-          <p>Arraste um vídeo ou clique para selecionar</p>
-        )}
-        {uploading && (
-          <Progress value={progress} className="mt-4" />
+          <>
+            <span>Arraste um vídeo ou clique para selecionar</span>
+            <span className="text-xs">MP4, WebM ou Ogg (max 100MB)</span>
+          </>
         )}
       </div>
-
-      {uploadedVideo && (
-        <VideoFormDialog
-          videoId={uploadedVideo.id}
-          videoUrl={uploadedVideo.url}
-          onClose={() => setUploadedVideo(null)}
-        />
-      )}
-    </>
+    </div>
   )
 } 
